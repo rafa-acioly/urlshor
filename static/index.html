@@ -15,7 +15,7 @@
 
 	function submitForm(event) {
 		event.preventDefault();
-		let input = document.querySelector("input[type='text']").value;
+		let input = document.querySelector("input[type='text']");
 
 		fetch('/short', {
 			method: 'POST',
