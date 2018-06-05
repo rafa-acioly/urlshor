@@ -33,7 +33,7 @@ func main() {
 func home(w http.ResponseWriter, r *http.Request) {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		fmt.Println("No caller information")
+		log.Printf("No caller information; %v", ok)
 	}
 	tmpl := template.Must(template.ParseFiles(path.Dir(filename) + "/static/index.html"))
 	tmpl.Execute(w, nil)
@@ -42,20 +42,23 @@ func home(w http.ResponseWriter, r *http.Request) {
 func shortURL(w http.ResponseWriter, r *http.Request) {
 	request, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("erro" + err.Error())
+		log.Println("Error trying to read request body; " + err.Error())
+		http.Error(w, "internal server error.", http.StatusInternalServerError)
 	}
 
-	var url interface{}
-	err = json.Unmarshal(request, &url)
+	var short struct {
+		URL string `json:"url"`
+	}
+	err = json.Unmarshal(request, &short)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("Error trying to unmarshall data; " + err.Error())
+		http.Error(w, "Internal server error.", http.StatusInternalServerError)
 	}
-
-	url = url.(map[string]interface{})
 
 	// Check if the request have a valid URL
-	if _, err = url.ParseRequestURI(string(url)); err != nil {
-		fmt.Println("Error: " + err.Error())
+	if _, err = url.ParseRequestURI(short.URL); err != nil {
+		log.Println("Invalid URL;" + err.Error())
+		http.Error(w, "Invalid URL", http.StatusBadRequest)
 	}
 
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
