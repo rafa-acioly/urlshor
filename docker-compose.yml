@@ -1,0 +1,22 @@
+version: "3"
+networks:
+  cache:
+  database:
+services:
+  web:
+    image: golang:1.8
+    ports:
+      - 5000:5000
+    networks:
+      - cache
+      - database
+  redis:
+    image: redis:3.2
+    networks:
+      - cache
+  postgres:
+    image: postgres:9.6
+    ports:
+      - 8080:80
+    networks:
+      - database
