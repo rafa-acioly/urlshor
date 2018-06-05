@@ -1,4 +1,4 @@
-package magaursho
+package urlshor
 
 import "math"
 

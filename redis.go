@@ -1,1 +1,1 @@
-package magaursho
+package urlshor

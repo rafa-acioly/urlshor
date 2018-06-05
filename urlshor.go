@@ -1,4 +1,4 @@
-package magaursho
+package urlshort
 
 import (
 	"log"
@@ -12,7 +12,7 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/short", shortURL)
-	router.HandleFunc("/get/{id}", getURL)
+	router.HandleFunc("/short/get/{id}", getURL)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -23,8 +23,12 @@ func main() {
 }
 
 func shortURL(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
 	// Check if the request have a valid URL
 	// if not valid return a http.StatusNotAllowed
+	if _, err := url.ParseRequestURI(params["url"]); err != nil {
+		w.WriteHeader(http.StatusNotAllowed)
+	}
 
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
 
