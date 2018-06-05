@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -13,6 +12,7 @@ import (
 	"runtime"
 
 	"github.com/gorilla/mux"
+	"github.com/rafa-acioly/urlshor/database"
 )
 
 func main() {
@@ -42,8 +42,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 func shortURL(w http.ResponseWriter, r *http.Request) {
 	request, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Println("Error trying to read request body; " + err.Error())
-		http.Error(w, "internal server error.", http.StatusInternalServerError)
+		internalServerError("Error trying to read request body; " + err.Error())
 	}
 
 	var short struct {
@@ -51,8 +50,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	}
 	err = json.Unmarshal(request, &short)
 	if err != nil {
-		log.Println("Error trying to unmarshall data; " + err.Error())
-		http.Error(w, "Internal server error.", http.StatusInternalServerError)
+		internalServerError("Error trying to unmarshall " + erro.Error())
 	}
 
 	// Check if the request have a valid URL
@@ -62,14 +60,27 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
+	id, err := database.GetLastInsertedID()
 
 	// Generate a encode with base36 on the (last inserted ID + 1)
+	encoded := encode36(id)
 
 	// Save the URL and the encode on database
+	err = database.Insert(encode, short.URL)
+	if err != nil {
+		internalServerError("Could not insert register on database." + err.Error())
+	}
 
 	// Save the URL and the encoded on redis
+	_ := redis.Set(encode, short.URL)
 
 	// return the new encoded URL
+	json.NewEncoder(w).Encode(map[string]string{"url": encoded})
+}
+
+func internalServerError(w http.ResponseWriter, msg ...string) {
+	log.Println(msg)
+	http.Error(w, "Internal server error.", http.StatusInternalServerError)
 }
 
 func getURL(w http.ResponseWriter, r *http.Request) {
