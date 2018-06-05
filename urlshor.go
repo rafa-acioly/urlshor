@@ -25,7 +25,6 @@ func main() {
 func shortURL(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	// Check if the request have a valid URL
-	// if not valid return a http.StatusNotAllowed
 	if _, err := url.ParseRequestURI(params["url"]); err != nil {
 		w.WriteHeader(http.StatusNotAllowed)
 	}
@@ -42,11 +41,9 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func getURL(w http.ResponseWriter, r *http.Request) {
-	// Check if the id is on redis and return the url if found
+	// Check if the id is on redis and redirect to the URL if found
 
-	// Check if the id is on database and return the url if found
+	// Check if the id is on database and redirect to the URL if found
 
 	// If we do not find the ID, show a 404 page
-
-	// redirect to the URL
 }
