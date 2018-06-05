@@ -1,1 +1,1 @@
-package urlshor
+package main

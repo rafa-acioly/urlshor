@@ -1,9 +1,14 @@
-package urlshort
+package main
 
 import (
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
+	"runtime"
 
 	"github.com/gorilla/mux"
 )
@@ -11,6 +16,7 @@ import (
 func main() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/", home)
 	router.HandleFunc("/short", shortURL)
 	router.HandleFunc("/short/get/{id}", getURL)
 
@@ -22,11 +28,20 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
+func home(w http.ResponseWriter, r *http.Request) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		fmt.Println("No caller information")
+	}
+	tmpl := template.Must(template.ParseFiles(path.Dir(filename) + "/static/index.html"))
+	tmpl.Execute(w, nil)
+}
+
 func shortURL(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	// Check if the request have a valid URL
 	if _, err := url.ParseRequestURI(params["url"]); err != nil {
-		w.WriteHeader(http.StatusNotAllowed)
+		w.WriteHeader(http.StatusForbidden)
 	}
 
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database

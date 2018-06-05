@@ -1,4 +1,4 @@
-package urlshor
+package main
 
 import "math"
 
