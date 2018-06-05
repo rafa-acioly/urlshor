@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -17,7 +19,7 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", home)
-	router.HandleFunc("/short", shortURL)
+	router.HandleFunc("/short", shortURL).Methods("POST")
 	router.HandleFunc("/short/get/{id}", getURL)
 
 	port := os.Getenv("PORT")
@@ -38,10 +40,22 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func shortURL(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
+	request, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("erro" + err.Error())
+	}
+
+	var url interface{}
+	err = json.Unmarshal(request, &url)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	url = url.(map[string]interface{})
+
 	// Check if the request have a valid URL
-	if _, err := url.ParseRequestURI(params["url"]); err != nil {
-		w.WriteHeader(http.StatusForbidden)
+	if _, err = url.ParseRequestURI(string(url)); err != nil {
+		fmt.Println("Error: " + err.Error())
 	}
 
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
