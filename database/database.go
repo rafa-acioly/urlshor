@@ -6,12 +6,12 @@ func GetLastInsertedID() (uint64, error) {
 	return 123, nil
 }
 
-// Insert makes a insert query on database
-func Insert(encode, url string) error {
+// Create makes a insert query on database
+func Create(encode, url string) error {
 	return nil
 }
 
-// Query makes a select statement on database
-func Query(encode string) {
+// Find makes a select statement on database
+func Find(encode string) {
 
 }
