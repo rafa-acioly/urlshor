@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -12,7 +13,7 @@ import (
 	"runtime"
 
 	"github.com/gorilla/mux"
-	"github.com/rafa-acioly/urlshor/database"
+	"github.com/rafa-acioly/urlshor/redis"
 )
 
 func main() {
@@ -42,7 +43,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 func shortURL(w http.ResponseWriter, r *http.Request) {
 	request, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		internalServerError("Error trying to read request body; " + err.Error())
+		internalServerError(w, "Error trying to read request body; "+err.Error())
 	}
 
 	var short struct {
@@ -50,7 +51,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	}
 	err = json.Unmarshal(request, &short)
 	if err != nil {
-		internalServerError("Error trying to unmarshall " + erro.Error())
+		internalServerError(w, "Error trying to unmarshall "+err.Error())
 	}
 
 	// Check if the request have a valid URL
@@ -60,19 +61,22 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
-	id, err := database.GetLastInsertedID()
+	// id, err := database.GetLastInsertedID()
 
 	// Generate a encode with base36 on the (last inserted ID + 1)
-	encoded := encode36(id)
+	encoded := encode36(98377)
 
 	// Save the URL and the encode on database
-	err = database.Insert(encode, short.URL)
+	/* err = database.Insert(encoded, short.URL)
 	if err != nil {
-		internalServerError("Could not insert register on database." + err.Error())
-	}
+		internalServerError(w, "Could not insert register on database."+err.Error())
+	} */
 
 	// Save the URL and the encoded on redis
-	_ := redis.Set(encode, short.URL)
+	err = redis.Set(encoded, short.URL)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// return the new encoded URL
 	json.NewEncoder(w).Encode(map[string]string{"url": encoded})
@@ -85,8 +89,17 @@ func internalServerError(w http.ResponseWriter, msg ...string) {
 
 func getURL(w http.ResponseWriter, r *http.Request) {
 	// Check if the id is on redis and redirect to the URL if found
+	params := mux.Vars(r)
+	value, err := redis.Get(params["id"])
+	if err != nil {
+		internalServerError(w, "Not found")
+	}
+
+	fmt.Println(value)
 
 	// Check if the id is on database and redirect to the URL if found
 
 	// If we do not find the ID, show a 404 page
+
+	http.Redirect(w, r, value, http.StatusPermanentRedirect)
 }
