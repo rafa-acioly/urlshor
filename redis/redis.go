@@ -24,6 +24,8 @@ func init() {
 }
 
 // Get retrieve the URL for given encoded ID
+//
+// The HMGET is used to retrieve the "url" key from a hash
 func Get(encode string) (result string, err error) {
 	val := client.HMGet(encode, "url")
 
@@ -36,8 +38,7 @@ func Get(encode string) (result string, err error) {
 		log.Fatal(err)
 	}
 
-	// If the key exist sum +1 on clicks counter
-	err = client.HIncrBy(encode, "clicks", 1).Err()
+	err = IncrementClickCounter(encode)
 	if err != nil {
 		return
 	}
@@ -46,6 +47,9 @@ func Get(encode string) (result string, err error) {
 }
 
 // Set saves the given URL for a encoded ID
+//
+// the HMSET is used to save a hash on cache so we
+// can count how many visits occurs within "clicks" counter
 func Set(encode, url string) (err error) {
 	hash := map[string]interface{}{
 		"url":    url,
@@ -57,4 +61,14 @@ func Set(encode, url string) (err error) {
 	}
 
 	return
+}
+
+// IncrementClickCounter add +1 to the "click" on given hash
+func IncrementClickCounter(encode string) (err error) {
+	err = client.HIncrBy(encode, "clicks", 1).Err()
+	if err != nil {
+		return
+	}
+
+	return nil
 }
