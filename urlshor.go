@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -20,8 +19,8 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", home)
+	router.HandleFunc("/{id}", getURL).Methods("GET")
 	router.HandleFunc("/short", shortURL).Methods("POST")
-	router.HandleFunc("/short/get/{id}", getURL)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -64,7 +63,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	// id, err := database.GetLastInsertedID()
 
 	// Generate a encode with base36 on the (last inserted ID + 1)
-	encoded := encode36(98377)
+	encoded := encode36(983778)
 
 	// Save the URL and the encode on database
 	/* err = database.Insert(encoded, short.URL)
@@ -95,11 +94,9 @@ func getURL(w http.ResponseWriter, r *http.Request) {
 		internalServerError(w, "Not found")
 	}
 
-	fmt.Println(value)
-
 	// Check if the id is on database and redirect to the URL if found
 
 	// If we do not find the ID, show a 404 page
 
-	http.Redirect(w, r, value, http.StatusPermanentRedirect)
+	http.Redirect(w, r, value, http.StatusFound)
 }

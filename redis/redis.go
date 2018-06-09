@@ -6,7 +6,6 @@ package redis
 
 import (
 	"log"
-	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -25,12 +24,22 @@ func init() {
 }
 
 // Get retrieve the URL for given encoded ID
-func Get(encode string) (value string, err error) {
-	value, err = client.Get(encode).Result()
+func Get(encode string) (result string, err error) {
+	val := client.HMGet(encode, "url")
+
+	err = val.Err()
+	result = val.Val()[0].(string)
+
 	if err == redis.Nil {
 		return
 	} else if err != nil {
 		log.Fatal(err)
+	}
+
+	// If the key exist sum +1 on clicks counter
+	err = client.HIncrBy(encode, "clicks", 1).Err()
+	if err != nil {
+		return
 	}
 
 	return
@@ -38,7 +47,11 @@ func Get(encode string) (value string, err error) {
 
 // Set saves the given URL for a encoded ID
 func Set(encode, url string) (err error) {
-	err = client.Set(encode, url, time.Minute*15).Err()
+	hash := map[string]interface{}{
+		"url":    url,
+		"clicks": 0,
+	}
+	err = client.HMSet(encode, hash).Err()
 	if err != nil {
 		return
 	}
