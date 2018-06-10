@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -63,7 +64,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	// id, err := database.GetLastInsertedID()
 
 	// Generate a encode with base36 on the (last inserted ID + 1)
-	encoded := encode36(983778)
+	encoded := encode36(rand.Uint64())
 
 	// Save the URL and the encode on database
 	/* err = database.Insert(encoded, short.URL)
@@ -78,7 +79,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// return the new encoded URL
-	json.NewEncoder(w).Encode(map[string]string{"url": encoded})
+	json.NewEncoder(w).Encode(map[string]string{"url": "http://localhost:5000/" + encoded})
 }
 
 func internalServerError(w http.ResponseWriter, msg ...string) {

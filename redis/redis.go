@@ -6,6 +6,7 @@ package redis
 
 import (
 	"log"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -23,11 +24,35 @@ func init() {
 	}
 }
 
+// Set saves the given URL for a encoded ID
+//
+// the HMSET is used to save a hash on cache so we
+// can count how many visits occurs with "clicks" counter
+// the default value to "clicks" counter is zero.
+func Set(key, url string) (err error) {
+	hash := map[string]interface{}{
+		"url":    url,
+		"clicks": 0,
+	}
+
+	err = client.HMSet(key, hash).Err()
+	if err != nil {
+		log.Println("Fail to save hash: " + err.Error())
+	}
+
+	err = client.Expire(key, time.Minute*10).Err()
+	if err != nil {
+		log.Println("Fail to set expire time to hash: " + err.Error())
+	}
+
+	return
+}
+
 // Get retrieve the URL for given encoded ID
 //
 // The HMGET is used to retrieve the "url" key from a hash
-func Get(encode string) (result string, err error) {
-	val := client.HMGet(encode, "url")
+func Get(key string) (result string, err error) {
+	val := client.HMGet(key, "url")
 
 	err = val.Err()
 	result = val.Val()[0].(string)
@@ -38,34 +63,17 @@ func Get(encode string) (result string, err error) {
 		log.Fatal(err)
 	}
 
-	err = IncrementClickCounter(encode)
+	err = IncrementClickCounter(key)
 	if err != nil {
-		return
+		log.Printf("Could not increment the click counter to key: %s - %s", key, err.Error())
 	}
 
 	return
 }
 
-// Set saves the given URL for a encoded ID
-//
-// the HMSET is used to save a hash on cache so we
-// can count how many visits occurs within "clicks" counter
-func Set(encode, url string) (err error) {
-	hash := map[string]interface{}{
-		"url":    url,
-		"clicks": 0,
-	}
-	err = client.HMSet(encode, hash).Err()
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-// IncrementClickCounter add +1 to the "click" on given hash
-func IncrementClickCounter(encode string) (err error) {
-	err = client.HIncrBy(encode, "clicks", 1).Err()
+// IncrementClickCounter add +1 to the "click" on given hash key
+func IncrementClickCounter(key string) (err error) {
+	err = client.HIncrBy(key, "clicks", 1).Err()
 	if err != nil {
 		return
 	}

@@ -1,4 +1,5 @@
-<h1> Home! </h1>
+
+<h1 class="result"></h1>
 
 <form action="/short" method="POST">
 
@@ -12,6 +13,7 @@
 
 	const button = document.querySelector("input[type='submit']");
 	const form = document.querySelector('form');
+	let result = document.querySelector('.result');
 
 	function submitForm(event) {
 		event.preventDefault();
@@ -24,7 +26,11 @@
 			},
 			body: JSON.stringify({url: input.value})
 		}).then(response => {
-			response.json().then(data => console.log(data)).catch(err => console.log(err))
+			response.json()
+				.then(data => {
+					result.textContent = data.url
+				})
+				.catch(err => console.log(err))
 		});
 	}
 
