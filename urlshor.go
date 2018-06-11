@@ -79,7 +79,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// return the new encoded URL
-	json.NewEncoder(w).Encode(map[string]string{"url": "http://localhost:5000/" + encoded})
+	json.NewEncoder(w).Encode(map[string]string{"url": encoded})
 }
 
 func internalServerError(w http.ResponseWriter, msg ...string) {
