@@ -17,12 +17,14 @@ const (
 	dbName   = "urlshor"
 )
 
-var dsn = fmt.Sprintf(
-	"host=%s port=%d user=%s password=%s dbname=%s",
-	host, port, user, password, dbName,
-)
+var (
+	dsn = fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s",
+		host, port, user, password, dbName,
+	)
 
-var database *sql.DB
+	database *sql.DB
+)
 
 func init() {
 	database, _ = sql.Open("postgres", dsn)
@@ -52,8 +54,8 @@ func Create(encode, url string) error {
 // Find makes a select statement on database
 func Find(encode string) string {
 	query := fmt.Sprintf("SELECT url FROM urls WHERE encode = %s", encode)
-	var url string
 
+	var url string
 	err := database.QueryRow(query).Scan(&url)
 	if err != nil {
 		log.Fatal("Could not select data from database " + err.Error())
