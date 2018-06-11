@@ -31,19 +31,19 @@ func init() {
 }
 
 // NextID return the next value for column "id"
-func NextID() (id uint64, err error) {
-	err = database.QueryRow("SELECT last_value FROM seq_urls_id").Scan(&id)
+func NextID() (uint64, error) {
+	var id uint64
+	err := database.QueryRow("SELECT nextval('seq_urls_id')").Scan(&id)
 
-	return
+	fmt.Println(id)
+
+	return id, err
 }
 
 // Create makes a insert query on database
 func Create(encode, url string) error {
-	query := fmt.Sprintf("INSERT INTO urls(url, clicks) VALUES(%s, %s)", encode, url)
+	query := fmt.Sprintf("INSERT INTO urls VALUES(nextval('seq_urls_id'), %s, %s)", encode, url)
 	_, err := database.Query(query)
-	if err != nil {
-		log.Fatal("Could not insert register in database " + err.Error())
-	}
 
 	return err
 }

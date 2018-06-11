@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -61,13 +60,16 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 	}
 
+	err = database.Create("XPTO", "google.com.br")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
-	id, err := database.GetLastInsertedID()
+	id, err := database.NextID()
 	if err != nil {
 		log.Fatal("Could not get last inserted ID " + err.Error())
 	}
-
-	fmt.Println(id)
 
 	// Generate a encode with base36 on the (last inserted ID + 1)
 	encoded := encode36(id)
