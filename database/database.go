@@ -11,7 +11,7 @@ import (
 
 const (
 	host     = "localhost"
-	port     = 8080
+	port     = 5432
 	user     = "postgres"
 	password = ""
 	dbName   = "urlshor"
@@ -19,7 +19,7 @@ const (
 
 var (
 	dsn = fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s",
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName,
 	)
 
@@ -30,12 +30,9 @@ func init() {
 	database, _ = sql.Open("postgres", dsn)
 }
 
-// GetLastInsertedID return the next value for column "id" using "next_val"
-func GetLastInsertedID() (id uint64, err error) {
-	err = database.QueryRow("SELECT last_value FROM seq_urls").Scan(&id)
-	if err != nil {
-		log.Fatal("Could not get the last inserted ID " + err.Error())
-	}
+// NextID return the next value for column "id"
+func NextID() (id uint64, err error) {
+	err = database.QueryRow("SELECT last_value FROM seq_urls_id").Scan(&id)
 
 	return
 }

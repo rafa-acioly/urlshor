@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +13,7 @@ import (
 	"runtime"
 
 	"github.com/gorilla/mux"
+	"github.com/rafa-acioly/urlshor/database"
 	"github.com/rafa-acioly/urlshor/redis"
 )
 
@@ -61,10 +62,15 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
-	// id, err := database.GetLastInsertedID()
+	id, err := database.GetLastInsertedID()
+	if err != nil {
+		log.Fatal("Could not get last inserted ID " + err.Error())
+	}
+
+	fmt.Println(id)
 
 	// Generate a encode with base36 on the (last inserted ID + 1)
-	encoded := encode36(rand.Uint64())
+	encoded := encode36(id)
 
 	// Save the URL and the encode on database
 	/* err = database.Insert(encoded, short.URL)
