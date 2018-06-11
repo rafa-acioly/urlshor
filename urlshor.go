@@ -60,11 +60,6 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 	}
 
-	err = database.Create("XPTO", "google.com.br")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
 	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
 	id, err := database.NextID()
 	if err != nil {
