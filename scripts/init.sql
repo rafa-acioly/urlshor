@@ -1,7 +1,3 @@
-\l
-\c urlshor
-\d urls
-
 create database urlshor;
 \c urlshor
 
