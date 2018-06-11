@@ -1,4 +1,6 @@
 version: "3"
+volumes:
+  dados:
 networks:
   cache:
   database:
@@ -18,7 +20,9 @@ services:
       - cache
   postgres:
     image: postgres:9.6
-    ports:
-      - 8080:80
+    volumes:
+      - dados:/var/lib/postgresql/data
+      - ./scripts:/scripts
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - database
