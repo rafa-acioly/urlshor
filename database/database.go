@@ -20,15 +20,15 @@ const (
 
 var (
 	dsn = fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbName,
+		"user=%s dbname=%s sslmode=disable",
+		user, dbName,
 	)
 
 	database *sql.DB
 )
 
 func init() {
-	database, _ = sql.Open("postgres", "user=postgres dbname=urlshor sslmode=disable")
+	database, _ = sql.Open("postgres", dsn)
 }
 
 // NextID return the next value for column "id"
