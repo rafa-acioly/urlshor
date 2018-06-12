@@ -11,10 +11,3 @@ create table urls(
 );
 
 create sequence seq_urls_id;
-
-create or replace function increment_clicks_counter(VARCHAR)
-	return void as
-	"
-		UPDATE urls SET clicks = clicks + 1 WHERE encode = $1
-	"
-language 'sql';

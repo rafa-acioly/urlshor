@@ -63,7 +63,7 @@ func Find(encode string) string {
 
 // IncrementClickCounter add +1 to "clicks" column on given key (encode column)
 func IncrementClickCounter(key string) error {
-	query := fmt.Sprintf("SELECT increment_clicks_counter(%s)", key)
+	query := fmt.Sprintf("UPDATE urls SET clicks = clicks + 1 WHERE encode = %s", key)
 	_, err := database.Query(query)
 	if err != nil {
 		return errors.New("Could not increment clicks counter to encode: " + key)
