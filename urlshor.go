@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"runtime"
 
@@ -23,12 +22,7 @@ func main() {
 	router.HandleFunc("/{id}", getURL).Methods("GET")
 	router.HandleFunc("/short", shortURL).Methods("POST")
 
-	port := os.Getenv("PORT")
-	if len(port) == 0 {
-		port = "5000"
-	}
-
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	log.Fatal(http.ListenAndServe(":5000", router))
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
