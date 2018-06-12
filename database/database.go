@@ -41,7 +41,7 @@ func NextID() (uint64, error) {
 
 // Create makes a insert query on database
 func Create(id uint64, encode, url string) error {
-	query := fmt.Sprintf("INSERT INTO urls VALUES(%d, '%s', '%s', 0)", id, url, encode)
+	query := fmt.Sprintf("INSERT INTO urls VALUES(%d, '%s', '%s')", id, url, encode)
 	fmt.Println(query)
 	_, err := database.Query(query)
 
