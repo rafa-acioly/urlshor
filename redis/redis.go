@@ -26,7 +26,7 @@ func init() {
 
 // Set saves the given URL for an encoded ID
 func Set(key, url string) (err error) {
-	err = client.Set(key, url, 10*time.Minute).Err()
+	err = client.Set(key, url, 30*time.Minute).Err()
 	if err != nil {
 		log.Println("Fail to save key: " + err.Error())
 	}
