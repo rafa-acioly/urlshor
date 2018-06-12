@@ -27,7 +27,7 @@ var (
 )
 
 func init() {
-	database, _ = sql.Open("postgres", dsn)
+	database, _ = sql.Open("postgres", "user=postgres dbname=urlshor sslmode=disable")
 }
 
 // NextID return the next value for column "id"
@@ -35,14 +35,13 @@ func NextID() (uint64, error) {
 	var id uint64
 	err := database.QueryRow("SELECT nextval('seq_urls_id')").Scan(&id)
 
-	fmt.Println(id)
-
 	return id, err
 }
 
 // Create makes a insert query on database
-func Create(encode, url string) error {
-	query := fmt.Sprintf("INSERT INTO urls VALUES(nextval('seq_urls_id'), %s, %s)", encode, url)
+func Create(id uint64, encode, url string) error {
+	query := fmt.Sprintf("INSERT INTO urls VALUES(%d, '%s', '%s', 0)", id, url, encode)
+	fmt.Println(query)
 	_, err := database.Query(query)
 
 	return err

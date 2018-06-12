@@ -27,7 +27,7 @@ var (
 	}
 )
 
-// Encode encodes a number to base36
+// encode36 encodes a number to base36
 func encode36(value uint64) string {
 
 	var res [16]byte
@@ -39,7 +39,7 @@ func encode36(value uint64) string {
 	return string(res[i+1:])
 }
 
-// Decode decodes a base36-encoded string
+// decode36 decodes a base36-encoded string
 func decode36(s string) uint64 {
 
 	res := uint64(0)

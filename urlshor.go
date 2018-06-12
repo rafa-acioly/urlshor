@@ -70,10 +70,10 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	encoded := encode36(id)
 
 	// Save the URL and the encode on database
-	/* err = database.Insert(encoded, short.URL)
+	err = database.Create(id, encoded, short.URL)
 	if err != nil {
 		internalServerError(w, "Could not insert register on database."+err.Error())
-	} */
+	}
 
 	// Save the URL and the encoded on redis
 	err = redis.Set(encoded, short.URL)
