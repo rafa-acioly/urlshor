@@ -1,6 +1,6 @@
 ## URLShor is a simple url shortner made with Go, Redis and Postgres
 
-Why short the URL?
+Why shorten the URL?
 
 - Easy URL memorization
 - Less characters to use in social media
