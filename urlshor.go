@@ -60,28 +60,25 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 	}
 
-	// Get the last inserted ID and sum +1 to find out which is the next ID to be inserted on database
+	// Get the next id from database to be inserted
 	id, err := database.NextID()
 	if err != nil {
 		log.Fatal("Could not get last inserted ID " + err.Error())
 	}
 
-	// Generate a encode with base36 on the (last inserted ID + 1)
+	// Generate a encode with base36
 	encoded := encode36(id)
 
-	// Save the URL and the encode on database
 	err = database.Create(id, encoded, short.URL)
 	if err != nil {
 		internalServerError(w, "Could not insert register on database."+err.Error())
 	}
 
-	// Save the URL and the encoded on redis
 	err = redis.Set(encoded, short.URL)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// return the new encoded URL
 	json.NewEncoder(w).Encode(map[string]string{"url": encoded})
 }
 
@@ -91,16 +88,23 @@ func internalServerError(w http.ResponseWriter, msg ...string) {
 }
 
 func getURL(w http.ResponseWriter, r *http.Request) {
-	// Check if the id is on redis and redirect to the URL if found
 	params := mux.Vars(r)
-	value, err := redis.Get(params["id"])
-	if err != nil {
-		internalServerError(w, "Not found")
+
+	value, _ := redis.Get(params["id"])
+	// If the encode was not found on redis, search in database
+	if len(value) == 0 {
+		value = database.Find(params["id"])
 	}
 
-	// Check if the id is on database and redirect to the URL if found
+	// If the encode was not found on database either...
+	if len(value) == 0 {
+		http.NotFound(w, r)
+	}
 
-	// If we do not find the ID, show a 404 page
+	err := database.IncrementClickCounter(params["id"])
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	http.Redirect(w, r, value, http.StatusFound)
 }

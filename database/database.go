@@ -3,6 +3,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -58,4 +59,15 @@ func Find(encode string) string {
 	}
 
 	return url
+}
+
+// IncrementClickCounter add +1 to "clicks" column on given key (encode column)
+func IncrementClickCounter(key string) error {
+	query := fmt.Sprintf("SELECT increment_clicks_counter(%s)", key)
+	_, err := database.Query(query)
+	if err != nil {
+		return errors.New("Could not increment clicks counter to encode: " + key)
+	}
+
+	return nil
 }
