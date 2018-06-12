@@ -5,6 +5,7 @@
 package redis
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -55,13 +56,14 @@ func Get(key string) (result string, err error) {
 	val := client.HMGet(key, "url")
 
 	err = val.Err()
-	result = val.Val()[0].(string)
 
-	if err == redis.Nil {
-		return
-	} else if err != nil {
-		log.Fatal(err)
+	if err == redis.Nil || err != nil {
+		return "", errors.New("Key not found")
 	}
+
+	// TODO: Apply validation to key not found
+	// there is no error above so this key is empty and the converstion crash
+	result = val.Val()[0].(string)
 
 	err = IncrementClickCounter(key)
 	if err != nil {

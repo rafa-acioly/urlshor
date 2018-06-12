@@ -42,7 +42,6 @@ func NextID() (uint64, error) {
 // Create makes a insert query on database
 func Create(id uint64, encode, url string) error {
 	query := fmt.Sprintf("INSERT INTO urls VALUES(%d, '%s', '%s')", id, url, encode)
-	fmt.Println(query)
 	_, err := database.Query(query)
 
 	return err
@@ -50,12 +49,16 @@ func Create(id uint64, encode, url string) error {
 
 // Find makes a select statement on database
 func Find(encode string) string {
-	query := fmt.Sprintf("SELECT url FROM urls WHERE encode = %s", encode)
+	query := fmt.Sprintf("SELECT url FROM urls WHERE encoded = '%s'", encode)
 
 	var url string
-	err := database.QueryRow(query).Scan(&url)
+	rows, err := database.Query(query)
 	if err != nil {
 		log.Fatal("Could not select data from database " + err.Error())
+	}
+
+	for rows.Next() {
+		rows.Scan(&url)
 	}
 
 	return url
@@ -63,10 +66,10 @@ func Find(encode string) string {
 
 // IncrementClickCounter add +1 to "clicks" column on given key (encode column)
 func IncrementClickCounter(key string) error {
-	query := fmt.Sprintf("UPDATE urls SET clicks = clicks + 1 WHERE encode = %s", key)
+	query := fmt.Sprintf("UPDATE urls SET clicks = clicks + 1 WHERE encoded = '%s'", key)
 	_, err := database.Query(query)
 	if err != nil {
-		return errors.New("Could not increment clicks counter to encode: " + key)
+		return errors.New("Could not increment clicks counter to encode: " + key + err.Error())
 	}
 
 	return nil

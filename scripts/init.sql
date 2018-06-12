@@ -5,7 +5,7 @@ create table urls(
 	id integer not null,
 	url varchar(255) not null,
 	encoded varchar(255) not null,
-	clicks integer not null DEFAULT 0,
+	clicks integer DEFAULT 0,
 	created_at timestamp not null DEFAULT current_timestamp,
 	constraint pk_urls_id primary key (id)
 );
