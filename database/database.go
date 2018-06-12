@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"log"
 
+	// Package included to connect the database,
+	// there is no need to import it on main
+	// because the connection is abstracted in this package
 	_ "github.com/lib/pq"
 )
 
@@ -47,7 +50,7 @@ func Create(id uint64, encode, url string) error {
 	return err
 }
 
-// Find makes a select statement on database
+// Find return an URL for the given encoded key
 func Find(encode string) string {
 	query := fmt.Sprintf("SELECT url FROM urls WHERE encoded = '%s'", encode)
 
