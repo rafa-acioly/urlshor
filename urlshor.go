@@ -93,13 +93,15 @@ func getURL(w http.ResponseWriter, r *http.Request) {
 	value, _ := redis.Get(params["id"])
 	// If the encode was not found on redis, search in database
 	if len(value) == 0 {
-		log.Printf("Cache not found for key %s", params["id"])
+		log.Printf("Cache not found for key: %s", params["id"])
 		value = database.Find(params["id"])
 	}
 
 	// If the encode was not found on database either...
 	if len(value) == 0 {
-		http.NotFound(w, r)
+		log.Printf("Key not found on database as well: %s", params["id"])
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
 	}
 
 	err := database.IncrementClickCounter(params["id"])
