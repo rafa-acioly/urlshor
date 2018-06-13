@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	host     = "localhost"
+	host     = "db"
 	port     = 5432
 	user     = "postgres"
 	password = ""
@@ -23,8 +23,8 @@ const (
 
 var (
 	dsn = fmt.Sprintf(
-		"user=%s dbname=%s sslmode=disable",
-		user, dbName,
+		"host=%s user=%s dbname=%s sslmode=disable",
+		host, user, dbName,
 	)
 
 	database *sql.DB
@@ -61,10 +61,8 @@ func Create(id uint64, encoded, url string) error {
 
 // Find return an URL for the given encoded key
 func Find(id uint64) string {
-	query := fmt.Sprintf("SELECT url FROM urls WHERE id = '%d'", id)
-
 	var url string
-	rows, err := database.Query(query)
+	rows, err := database.Query("SELECT url FROM urls WHERE id = $1", id)
 	if err != nil {
 		log.Fatal("Could not select data from database " + err.Error())
 	}
