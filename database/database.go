@@ -98,8 +98,8 @@ func Get(key string) URLInfo {
 
 // IncrementClickCounter add +1 to "clicks" column on given key (encode column)
 func IncrementClickCounter(key string) error {
-	query := fmt.Sprintf("UPDATE urls SET clicks = clicks + 1 WHERE encoded = '%s'", key)
-	_, err := database.Query(query)
+	stmt, _ := database.Prepare("UPDATE urls SET clicks = clicks + 1 WHERE encoded = $1")
+	_, err := stmt.Exec(key)
 	if err != nil {
 		return errors.New("Could not increment clicks counter to encode: " + key + err.Error())
 	}
