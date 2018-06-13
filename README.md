@@ -18,7 +18,7 @@ Each URL sent to be shortened [will be cached for 30 minutes.](https://github.co
 as well saved in database. Any request that was erased from redis but still in database [will be bounded again to redis](https://github.com/rafa-acioly/urlshor/blob/master/urlshor.go#L99).
 
 The back-end API only respond with a simple `json` that contains the `code` to be used after your domain, example:
-```
+```sh
 curl -X POST http://localhost:5000/short \
   -d '{
 	"url": "http://an-long-url.com.br/page/"
@@ -37,5 +37,21 @@ By default the [port `5000` is used](https://github.com/rafa-acioly/urlshor/blob
 
 - GET `/{id}` - redirect the user for the given encoded key given if exist on redis or in database
 
+- GET `/info/{id}` - return a `json` with all information about the given `id`
+  - example:
+    ```json
+      {
+        "url":"http://9gag.com",
+        "encoded":"G",
+        "clicks":3,
+        "created_at":"2018-06-12T19:25:18.786986Z"
+      }
+    ```
+
 - POST `/short` - return a `json` with the given key for a url encoded
-    - example: `{"url": "9ZYOP"}`
+  - example:
+    ```json
+      {
+        "url": "9ZYOP"
+      }
+    ```
