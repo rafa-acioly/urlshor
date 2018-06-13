@@ -87,11 +87,11 @@ func getURL(w http.ResponseWriter, r *http.Request) {
 	if len(value) == 0 {
 		log.Printf("Cache not found for key: %s", params["id"])
 
-		databaseValue := database.Find(params["id"])
+		value = database.Find(decode36(params["id"]))
 		// If the value was found on database, bound it to redis
-		if len(databaseValue) > 0 {
-			redis.Set(params["id"], databaseValue)
-			log.Println("Found on database, key included on cache: ", params["id"])
+		if len(value) > 0 {
+			redis.Set(params["id"], value)
+			log.Println("Found on database, key included on cache:", params["id"])
 		} else {
 			log.Printf("Key not found on database as well: %s", params["id"])
 			http.Error(w, "Not found", http.StatusNotFound)

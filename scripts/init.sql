@@ -11,3 +11,4 @@ create table urls(
 );
 
 create sequence seq_urls_id;
+create index idx_urls_id on urls(id);

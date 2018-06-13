@@ -60,8 +60,8 @@ func Create(id uint64, encoded, url string) error {
 }
 
 // Find return an URL for the given encoded key
-func Find(encoded string) string {
-	query := fmt.Sprintf("SELECT url FROM urls WHERE encoded = '%s'", encoded)
+func Find(id uint64) string {
+	query := fmt.Sprintf("SELECT url FROM urls WHERE id = '%d'", id)
 
 	var url string
 	rows, err := database.Query(query)
