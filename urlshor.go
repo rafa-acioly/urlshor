@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -21,7 +22,9 @@ func main() {
 	router.HandleFunc("/", home)
 	router.HandleFunc("/{id}", getURL).Methods("GET")
 	router.HandleFunc("/short", shortURL).Methods("POST")
+	router.HandleFunc("/info/{key}", infoURL).Methods("GET")
 
+	fmt.Println("Running...")
 	log.Fatal(http.ListenAndServe(":5000", router))
 }
 
@@ -76,11 +79,6 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"url": encoded})
 }
 
-func internalServerError(w http.ResponseWriter, msg ...string) {
-	log.Println(msg)
-	http.Error(w, "Internal server error.", http.StatusInternalServerError)
-}
-
 func getURL(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -107,4 +105,24 @@ func getURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, value, http.StatusFound)
+}
+
+func infoURL(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	url := database.Get(params["key"])
+
+	w.Header().Set("Content-Type", "Application/json")
+
+	if len(url.Encoded) == 0 {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	json.NewEncoder(w).Encode(url)
+}
+
+func internalServerError(w http.ResponseWriter, msg ...string) {
+	log.Println(msg)
+	http.Error(w, "Internal server error.", http.StatusInternalServerError)
 }

@@ -30,6 +30,15 @@ var (
 	database *sql.DB
 )
 
+// URLInfo represents all fields on url table
+type URLInfo struct {
+	ID        int    `json:"-"`
+	URL       string `json:"url"`
+	Encoded   string `json:"encoded"`
+	Clicks    int    `json:"clicks"`
+	CreatedAt string `json:"created_at"`
+}
+
 func init() {
 	database, _ = sql.Open("postgres", dsn)
 }
@@ -43,25 +52,45 @@ func NextID() (uint64, error) {
 }
 
 // Create makes a insert query on database
-func Create(id uint64, encode, url string) error {
+func Create(id uint64, encoded, url string) error {
 	stmt, _ := database.Prepare("INSERT INTO urls VALUES($1, $2, $3)")
-	_, err := stmt.Exec(id, url, encode)
+	_, err := stmt.Exec(id, url, encoded)
 
 	return err
 }
 
 // Find return an URL for the given encoded key
-func Find(encode string) string {
-	query := fmt.Sprintf("SELECT url FROM urls WHERE encoded = '%s'", encode)
+func Find(encoded string) string {
+	query := fmt.Sprintf("SELECT url FROM urls WHERE encoded = '%s'", encoded)
 
 	var url string
 	rows, err := database.Query(query)
 	if err != nil {
 		log.Fatal("Could not select data from database " + err.Error())
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		rows.Scan(&url)
+	}
+
+	return url
+}
+
+// Get return a complete data register from database for the given encoded key
+func Get(key string) URLInfo {
+	query := fmt.Sprintf("SELECT * FROM urls WHERE encoded = '%s'", key)
+
+	rows, err := database.Query(query)
+
+	if err != nil {
+		log.Fatal("Could not select data from database: " + err.Error())
+	}
+	defer rows.Close()
+
+	var url URLInfo
+	for rows.Next() {
+		rows.Scan(&url.ID, &url.URL, &url.Encoded, &url.Clicks, &url.CreatedAt)
 	}
 
 	return url
