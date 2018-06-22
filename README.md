@@ -28,6 +28,12 @@ curl -X POST http://localhost:5000/short \
 {"url":"F9WL"}
 ```
 
+### How to use it
+
+```
+	docker-compose up -d
+```
+
 ### Http port
 
 By default the [port `5000` is used](https://github.com/rafa-acioly/urlshor/blob/master/urlshor.go#L25), feel free to changed it, but don't forget to [change on docker compose file](https://github.com/rafa-acioly/urlshor/blob/master/docker-compose.yml#L11) as well.
