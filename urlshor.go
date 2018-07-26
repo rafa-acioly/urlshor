@@ -8,9 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"path"
-	"runtime"
-
 	"github.com/gorilla/mux"
 	"github.com/rafa-acioly/urlshor/database"
 	"github.com/rafa-acioly/urlshor/redis"
@@ -29,18 +26,14 @@ func main() {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		log.Printf("No caller information; %v", ok)
-	}
-	tmpl := template.Must(template.ParseFiles(path.Dir(filename) + "/static/index.html"))
-	tmpl.Execute(w, nil)
+	view := template.Must(template.ParseFiles("static/index.html"))
+	view.ExecuteTemplate(w, "index.html", nil)
 }
 
 func shortURL(w http.ResponseWriter, r *http.Request) {
 	request, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		internalServerError(w, "Error trying to read request body; "+err.Error())
+		internalServerError(w, "Error trying to read request body; " + err.Error())
 	}
 
 	var short struct {
@@ -48,7 +41,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	}
 	err = json.Unmarshal(request, &short)
 	if err != nil {
-		internalServerError(w, "Error trying to unmarshall "+err.Error())
+		internalServerError(w, "Error trying to unmarshall " + err.Error())
 	}
 
 	// Check if the request have a valid URL
@@ -68,7 +61,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 
 	err = database.Create(id, encoded, short.URL)
 	if err != nil {
-		internalServerError(w, "Could not insert register on database."+err.Error())
+		internalServerError(w, "Could not insert register on database." + err.Error())
 	}
 
 	err = redis.Set(encoded, short.URL)
@@ -110,16 +103,16 @@ func getURL(w http.ResponseWriter, r *http.Request) {
 func infoURL(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	url := database.Get(params["key"])
+	link := database.Get(params["key"])
 
 	w.Header().Set("Content-Type", "Application/json")
 
-	if len(url.Encoded) == 0 {
+	if len(link.Encoded) == 0 {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
-	json.NewEncoder(w).Encode(url)
+	json.NewEncoder(w).Encode(link)
 }
 
 func internalServerError(w http.ResponseWriter, msg ...string) {
