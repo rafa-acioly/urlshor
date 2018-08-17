@@ -3,49 +3,45 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+
 	"github.com/gorilla/mux"
 	"github.com/rafa-acioly/urlshor/database"
 	"github.com/rafa-acioly/urlshor/redis"
 )
 
+type short struct {
+	URL string `json:"url"`
+}
+
 func main() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", home)
-	router.HandleFunc("/{id}", getURL).Methods("GET")
-	router.HandleFunc("/short", shortURL).Methods("POST")
-	router.HandleFunc("/info/{key}", infoURL).Methods("GET")
+	router.HandleFunc("/{id}", expand).Methods("GET")
+	router.HandleFunc("/shorten", shorten).Methods("POST")
+	router.HandleFunc("/info/{key}", info).Methods("GET")
 
 	fmt.Println("Running...")
 	log.Fatal(http.ListenAndServe(":5000", router))
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	view := template.Must(template.ParseFiles("static/index.html"))
-	view.ExecuteTemplate(w, "index.html", nil)
-}
-
-func shortURL(w http.ResponseWriter, r *http.Request) {
+func shorten(w http.ResponseWriter, r *http.Request) {
 	request, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		internalServerError(w, "Error trying to read request body; " + err.Error())
+		internalServerError(w, "Error trying to read request body; "+err.Error())
 	}
 
-	var short struct {
-		URL string `json:"url"`
-	}
-	err = json.Unmarshal(request, &short)
+	var address short
+	err = json.Unmarshal(request, &address)
 	if err != nil {
-		internalServerError(w, "Error trying to unmarshall " + err.Error())
+		internalServerError(w, "Error trying to unmarshall "+err.Error())
 	}
 
 	// Check if the request have a valid URL
-	if _, err = url.ParseRequestURI(short.URL); err != nil {
+	if _, err = url.ParseRequestURI(address.URL); err != nil {
 		log.Println("Invalid URL;" + err.Error())
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 	}
@@ -59,12 +55,12 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	// Generate a encode with base36
 	encoded := encode36(id)
 
-	err = database.Create(id, encoded, short.URL)
+	err = database.Create(id, encoded, address.URL)
 	if err != nil {
-		internalServerError(w, "Could not insert register on database." + err.Error())
+		internalServerError(w, "Could not insert register on database."+err.Error())
 	}
 
-	err = redis.Set(encoded, short.URL)
+	err = redis.Set(encoded, address.URL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,7 +68,7 @@ func shortURL(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"url": encoded})
 }
 
-func getURL(w http.ResponseWriter, r *http.Request) {
+func expand(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	value, _ := redis.Get(params["id"])
@@ -100,7 +96,7 @@ func getURL(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, value, http.StatusFound)
 }
 
-func infoURL(w http.ResponseWriter, r *http.Request) {
+func info(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	link := database.Get(params["key"])
